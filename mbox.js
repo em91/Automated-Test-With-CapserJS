@@ -7,6 +7,8 @@ var username = "xx",
 
 casper.userAgent('Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36');
 
+
+//页面出现JS错误
 casper.on( "page.error", function( msg, trace ) {
     this.echo( "Error: " + msg, "ERROR" );
 });
@@ -66,43 +68,52 @@ var checkListUI = function(){
 	})
 
 	var codeOk = result.code === "S_OK";
-	casper.test.assert(codeOk, "get list S_OK")
+	casper.test.assert( codeOk, "get list S_OK" )
 
 	list = result.data;
 	var count = 0;
 
-	for(var i = 0, l = list.length; i < l; i++){
+	//判断服务端取到的数据在UI上是否都存在
+	for( var i = 0, l = list.length; i < l; i++ ){
 		var isExist = casper.exists({
 			type: 'xpath',
 			path: '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@mid="' + list[i].mid + '"]'
 		});
-		if(isExist){
+
+		if( isExist ){
 			count++;
 		}
 	}
 
+	//获取分页数量
 	var pageSize = casper.evaluate(function(){
 		return $SDCache.getMaxList();
 	})
 
+	//获取UI上显示的邮件数量
 	var rowLength = casper.evaluate(function(){
-		return $('div[id^=module_mbox_] :visible tbody.mboxListRow tr').size();
+		return $( 'div[id^=module_mbox_] :visible tbody.mboxListRow tr' ).size();
 	})
-	var pageSizeOk = (count === rowLength) && (count === pageSize);
-	casper.test.assert(pageSizeOk, "check pagesize:" + count + "," + rowLength);
+
+	//判断分页数、UI邮件数量是否相同
+	var pageSizeOk = ( count === rowLength ) && ( count === pageSize );
+	casper.test.assert( pageSizeOk, "check pagesize:" + count + "," + rowLength );
 }
 
 
 //撤销测试
-var withdrawTest = function(callback){
+var withdrawTest = function( callback ){
 	casper.wait(500, function(){
 		var msgXpath = '/html/body/div/div/div/div[2]/div[2]/div[2]/span';
-		var msg = this.exists(x(msgXpath));
-		casper.test.assert(msg, /*this.fetchText(x(msgXpath))*/ 'mark unread done, tip ok');
+
+		//判断操作成功的提示是否存在
+		var msg = this.exists( x( msgXpath ) );
+		casper.test.assert( msg, 'tip ok.' );
 		checkListUI();
 
-		casper.click("#js-msgbox-tip span a");
-		casper.test.info("click withdraw");
+		//点击撤销后校验UI
+		casper.click( "#js-msgbox-tip span a" );
+		casper.test.info( "click withdraw" );
 		casper.wait(1000, function(){
 			checkListUI();
 			callback && callback();
@@ -111,63 +122,42 @@ var withdrawTest = function(callback){
 }
 
 
-//点击标记为
+//点击标记为，下拉菜单截图
 var clickMarkAs = function(){
 	var menuListXpath = '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div[contains(@class,"m-lst")]/div/div';
-	this.test.assert(this.exists(x(menuListXpath)), 'test dropmenu')
-	this.capture("mbox/jy5_mbox_mark.png");
+	this.test.assert( this.exists( x( menuListXpath ) ), 'test dropmenu' )
+	this.capture( "mbox/jy5_mbox_mark.png" );
 }
 
 //点击删除
 casper.repeat(1, function(){
-	casper.click(x('//div[starts-with(@id, "module")][@style!="display: none;"]/div//tr[5]/td[1]'));
+	casper.click( x( '//div[starts-with(@id, "module")][@style!="display: none;"]/div//tr[5]/td[1]' ) );
 	casper.wait(100, function(){
-		// this.capture("mbox/jy5_mbox_delete_chk" + (deleteIndex++) + ".png");
-		this.test.info("test delete mail and validate ui...");
-		this.click(x('//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div[3]'));
-		this.wait(600, function(){
-			// var msgXpath = '/html/body/div/div/div/div[2]/div[2]/div[2]/span';
-			// var msg = this.exists(x(msgXpath));
-			// this.test.assert(msg, /*this.fetchText(x(msgXpath))*/ 'delete done, tip ok');
+		this.test.info( "test delete mail and validate ui..." );
+		this.click( x( '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div[3]' ) );
 
-			// checkListUI();
-			// this.capture("mbox/jy5_mbox_delete" + (deleteIndex++) + ".png");
-
-			// this.click("#js-msgbox-tip a");
-			// this.test.info("click withdraw");
-			// this.wait(1000, function(){
-			// 	checkListUI();
-			// })
+		//测试撤销
+		this.wait( 600, function(){
 			withdrawTest();
 		})
 	})
 })
+
 
 //点击举报
 casper.repeat(1, function(){
-	casper.click(x('//div[starts-with(@id, "module")][@style!="display: none;"]/div//tr[5]/td[1]'));
-	casper.wait(100, function(){
-		this.test.info("test report mail and validate ui...");
-		this.click(x('//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div[4]'));
-		this.wait(600, function(){
-			// var msgXpath = '/html/body/div/div/div/div[2]/div[2]/div[2]/span';
-			// var msg = this.exists(x(msgXpath));
-			// this.test.assert(msg, /*this.fetchText(x(msgXpath))*/ 'delete done, tip ok');
-
-			// checkListUI();
-			// this.capture("mbox/jy5_mbox_report" + (deleteIndex++) + ".png");
-
-			// this.click("#js-msgbox-tip a");
-			// this.test.info("click withdraw");
-			// this.wait(1000, function(){
-			// 	checkListUI();
-			// })
+	casper.click( x( '//div[starts-with(@id, "module")][@style!="display: none;"]/div//tr[5]/td[1]' ) );
+	casper.wait( 100, function(){
+		this.test.info( "test report mail and validate ui..." );
+		this.click( x( '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div[4]' ) );
+		this.wait( 600, function(){
 			withdrawTest();
 		})
 	})
 })
 
 
+//清理一下
 casper.then(function(){
 	this.capture("mbox/jy5_before_mark.png");
 	this.evaluate(function(){
@@ -177,48 +167,35 @@ casper.then(function(){
 })
 
 
-//mark read
+//标记为已读/未读
 casper.then(function(){
-	casper.click(x('//div[starts-with(@id, "module")][@style!="display: none;"]//tr[5]//td[1]'));
-	casper.wait(800, function(){
-		this.test.info("test mark mail and validate ui...");
-		this.mouseEvent("mousedown", x('//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div/div[contains(.,"标记为")]'));
-		this.wait(200, function(){
-			// var msgXpath = '/html/body/div/div/div/div[2]/div[2]/div[2]/span';
-			// var msg = this.exists(x(msgXpath));
-			// this.test.assert(msg, /*this.fetchText(x(msgXpath))*/ 'delete done, tip ok');
-
-			// checkListUI();
-			
-			clickMarkAs.apply(casper);
+	casper.click( x( '//div[starts-with(@id, "module")][@style!="display: none;"]//tr[5]//td[1]' ) );
+	casper.wait( 800, function(){
+		this.test.info( "test mark mail and validate ui..." );
+		this.mouseEvent( "mousedown", x( '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div/div[contains(.,"标记为")]' ) );
+		this.wait( 200, function(){
+			clickMarkAs.apply( casper );
 
 			var markUnreadXpath = '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div[contains(@class,"m-lst")]/div/div[1]';
-			this.click(x(markUnreadXpath));
-			this.test.info("mark unread/read clicked.");
-
-			// withdrawTest();
+			this.click( x( markUnreadXpath ) );
+			this.test.info( "mark unread/read clicked." );
 		})
 	})
 })
 
-//mark star
+
+//标为星标
 casper.then(function(){
-	casper.click(x('//div[starts-with(@id, "module")][@style!="display: none;"]//tr[5]//td[1]'));
-	casper.wait(800, function(){
-		this.test.info("test mark mail and validate ui...");
-		this.mouseEvent("mousedown", x('//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div/div[contains(.,"标记为")]'));
-		this.wait(200, function(){
-			// var msgXpath = '/html/body/div/div/div/div[2]/div[2]/div[2]/span';
-			// var msg = this.exists(x(msgXpath));
-			// this.test.assert(msg, /*this.fetchText(x(msgXpath))*/ 'delete done, tip ok');
-
-			// checkListUI();
-
-			clickMarkAs.apply(casper);
+	casper.click( x( '//div[starts-with(@id, "module")][@style!="display: none;"]//tr[5]//td[1]' ) );
+	casper.wait( 800, function(){
+		this.test.info( "test mark mail and validate ui..." );
+		this.mouseEvent( "mousedown", x( '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div/div[contains(.,"标记为")]' ) );
+		this.wait( 200, function(){
+			clickMarkAs.apply( casper );
 
 			var markStarXpath = '//div[starts-with(@id, "module")][@style!="display: none;"]//div[@class="m-buttons f-cb js-toolbar js-widget"]/div[contains(@class,"m-lst")]/div/div[2]';
-			this.click(x(markStarXpath));
-			this.test.info("mark star clicked.");
+			this.click( x( markStarXpath ) );
+			this.test.info( "mark star clicked." );
 
 			withdrawTest();
 		})
@@ -226,5 +203,5 @@ casper.then(function(){
 })
 
 casper.run(function(){
-	this.test.renderResults(true);
+	this.test.renderResults( true );
 });
