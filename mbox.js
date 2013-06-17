@@ -4,11 +4,12 @@ var clientutils;
 
 var $CONFIG = {};
 $CONFIG.CAPTURE = false;
+$CONFIG.NEWROW = true;
 
 //用户信息
 var $USER = {};
-$USER.USERNAME = "em91beta";
-$USER.PASSWORD = "em91beta12";
+$USER.USERNAME = "";
+$USER.PASSWORD = "";
 
 //URL相关
 var $URL = {};
@@ -17,18 +18,6 @@ $URL.LOGIN = 'http://mail.163.com';
 //正则匹配
 var $REG = {};
 $REG.JY5_LOGIN_OK_URL = /^http:\/\/[tc]*webmail.mail.163.com\/jy5\/main\.jsp\?sid=/;
-
-
-//选择器
-var $SELECTOR = {};
-$SELECTOR.LOGIN_PAGE_FORM = "form#login163";
-$SELECTOR.LOGIN_OK_BTN = "#loginBtn";
-$SELECTOR.MBOXNAV_FOLDER_1 = '#folder_1 .js-label';
-
-
-//XPATH
-var $XPATH = {};
-$XPATH.LIST_CONTAINER_EXIST = '//div[@class="g-mn-mx scroll js-list-container"]';
 
 var $Utils = {};
 /**
@@ -111,7 +100,7 @@ $MBOX.checkListUI = function(){
 
 	//获取UI上显示的邮件数量
 	var rowLength = casper.evaluate(function(){
-		return $( 'div[id^=module_mbox_] :visible tbody.mboxListRow tr' ).size();
+		return $( 'div[id^=module_mbox_] :visible .js-row' ).size();
 	})
 
 	//判断分页数、UI邮件数量是否相同
@@ -120,7 +109,7 @@ $MBOX.checkListUI = function(){
 }
 
 $MBOX.withdrawTest = function( callback ){
-	casper.wait(500, function(){
+	casper.wait(1000, function(){
 		//判断操作成功的提示是否存在
 		var msgbox = x( $Utils.getMsgBoxSuccXpath() );
 		var msg = this.exists( msgbox );
@@ -129,12 +118,17 @@ $MBOX.withdrawTest = function( callback ){
 		$MBOX.checkListUI();
 
 		//点击撤销后校验UI
-		casper.click( x( $Utils.getWithDrawXpath() ) );
-		casper.test.info( "Click withdraw" );
-		casper.wait(1500, function(){
-			$MBOX.checkListUI();
-			callback && callback();
-		})
+		var withdrawLink = x( $Utils.getWithDrawXpath() );
+		if( casper.exists( withdrawLink ) ){
+			casper.click( x( $Utils.getWithDrawXpath() ) );
+			casper.test.info( "Click withdraw" );
+			casper.wait(1500, function(){
+				$MBOX.checkListUI();
+				callback && callback();
+			})
+		} else {
+			casper.test.info( 'no withdraw operation' );
+		}
 	})
 }
 
@@ -148,6 +142,36 @@ $MBOX.assertDialog = function(){
 	var dialogXpath = '//div[contains(@class,"js-w-dialogbox")][contains(@style,"display: block")]';
 	casper.test.assert( casper.exists( x( dialogXpath ) ), 'Dialog Ok' );
 }
+
+//获取第五封信的可点击checkbox
+$MBOX.getCheckBox = function(){
+	if( !$CONFIG.NEWROW ){
+		return x( $Utils.getModuleXpath('/div//tr[5]/td[1]') );
+	} else {
+		return x( $Utils.getModuleXpath('/div//table[5]//td[1]') );
+	}
+}
+
+
+//选择器
+var $SELECTOR = {};
+$SELECTOR.LOGIN_PAGE_FORM = "form#login163";
+$SELECTOR.LOGIN_OK_BTN = "#loginBtn";
+$SELECTOR.MBOXNAV_FOLDER_1 = '#folder_1 .js-label';
+
+
+//XPATH
+var $XPATH = {};
+$XPATH.LIST_CONTAINER_EXIST = $Utils.getModuleXpath('//div[contains(@class, "js-list-container")]');
+$XPATH.TOOLBAR_MARK_BUTTON = $Utils.getToolbarXpath( '/div/div[contains(.,"标记为")]' );
+$XPATH.TOOLBAR_MOVETO_BUTTON = $Utils.getToolbarXpath( '/div/div[contains(.,"移动到")]' );
+$XPATH.TOOLBAR_MARK_READ_UNREAD_MENU = $Utils.getToolbarDropMenu( '/div/div[1]' );
+$XPATH.TOOLBAR_MARK_STAR_UNSTAR_MENU = $Utils.getToolbarDropMenu( '/div/div[2]' );
+$XPATH.TOOLBAR_MOVETO_FOLDER_2_MENU = $Utils.getToolbarDropMenu( '/div/div[2]' );
+$XPATH.TOOLBAR_REPORT_BUTTON = $Utils.getToolbarXpath('/div[4]');
+$XPATH.TOOLBAR_DELETE_BUTTON = $Utils.getToolbarXpath('/div[3]');
+
+
 
 casper.userAgent('Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36');
 
@@ -195,12 +219,23 @@ casper.waitFor(function check(){
 	$Utils.capture( 'mbox/welcome.png' );
 })
 
+
+casper.then(function(){
+	var url = this.evaluate(function(){
+		return "http://l.mail.163.com/jy5/main.jsp?sid=" + $CONF.sid + "#module=welcome";
+	})
+	casper.thenOpen( url );
+})
+
 //点击侧边栏收件箱，等待100ms后截图收件箱
 casper.thenClick( $SELECTOR.MBOXNAV_FOLDER_1, function(){
-	casper.wait( 200, function(){
+	casper.waitForSelector( {
+		type: "xpath",
+		path: $XPATH.LIST_CONTAINER_EXIST
+	}, function(){
 		var done = this.exists({
 			type: 'xpath',
-			path: $Utils.getModuleXpath( $XPATH.LIST_CONTAINER_EXIST )
+			path: $XPATH.LIST_CONTAINER_EXIST
 		});
 
 		// var done = this.exists( ".js-list-container" );
@@ -212,10 +247,10 @@ casper.thenClick( $SELECTOR.MBOXNAV_FOLDER_1, function(){
 //点击删除
 casper.then(function(){
 	//点击第五封信
-	casper.click( x( $Utils.getModuleXpath('/div//tr[5]/td[1]') ) );
+	casper.click( $MBOX.getCheckBox() );
 	casper.wait(100, function(){
 		this.test.info( "Test delete mail..." );
-		this.click( x( $Utils.getToolbarXpath('/div[3]') ) );
+		this.click( x( $XPATH.TOOLBAR_DELETE_BUTTON ) );
 
 		//测试撤销
 		this.wait( 600, function(){
@@ -227,10 +262,10 @@ casper.then(function(){
 
 //点击举报
 casper.then(function(){
-	casper.click( x( $Utils.getModuleXpath('/div//tr[5]/td[1]') ) );
+	casper.click( $MBOX.getCheckBox() );
 	casper.wait( 100, function(){
 		this.test.info( "Test report mail..." );
-		this.click( x( $Utils.getToolbarXpath('/div[4]') ) );
+		this.click( x( $XPATH.TOOLBAR_REPORT_BUTTON ) );
 		this.wait( 600, function(){
 			$MBOX.withdrawTest();
 		})
@@ -239,14 +274,14 @@ casper.then(function(){
 
 //标记为已读/未读
 casper.then(function(){
-	casper.click( x( $Utils.getModuleXpath( '//tr[5]//td[1]' ) ) );
+	casper.click( $MBOX.getCheckBox() );
 	casper.wait( 800, function(){
 		this.test.info( "Test mark mail..." );
-		this.mouseEvent( "mousedown", x( $Utils.getToolbarXpath( '/div/div[contains(.,"标记为")]' ) ) );
+		this.mouseEvent( "mousedown", x( $XPATH.TOOLBAR_MARK_BUTTON ) );
 		this.wait( 200, function(){
 			$MBOX.assertDropMenu.apply( casper );
 
-			var markUnreadXpath = $Utils.getToolbarDropMenu( '/div/div[1]' );
+			var markUnreadXpath = $XPATH.TOOLBAR_MARK_READ_UNREAD_MENU;
 			this.click( x( markUnreadXpath ) );
 			this.test.info( "Mark unread/read clicked." );
 
@@ -258,14 +293,14 @@ casper.then(function(){
 
 //标为星标
 casper.then(function(){
-	casper.click( x( $Utils.getModuleXpath( '//tr[5]//td[1]' ) ) );
+	casper.click( $MBOX.getCheckBox() );
 	casper.wait( 800, function(){
 		this.test.info( "Test mark mail..." );
-		this.mouseEvent( "mousedown", x( $Utils.getToolbarXpath( '/div/div[contains(.,"标记为")]' ) ) );
+		this.mouseEvent( "mousedown", x( $XPATH.TOOLBAR_MARK_BUTTON ) );
 		this.wait( 200, function(){
 			$MBOX.assertDropMenu.apply( casper );
 
-			var markStarXpath = $Utils.getToolbarDropMenu( '/div/div[2]' );
+			var markStarXpath = $XPATH.TOOLBAR_MARK_STAR_UNSTAR_MENU;
 			this.click( x( markStarXpath ) );
 			this.test.info( "Mark star clicked." );
 
@@ -277,14 +312,14 @@ casper.then(function(){
 
 //移动到
 casper.then(function(){
-	casper.click( x( $Utils.getModuleXpath( '//tr[5]//td[1]' ) ) );
+	casper.click( $MBOX.getCheckBox() );
 	casper.wait( 800, function(){
 		this.test.info( "Test move mail..." );
-		this.mouseEvent( "mousedown", x( $Utils.getToolbarXpath( '/div/div[contains(.,"移动到")]' ) ) );
+		this.mouseEvent( "mousedown", x( $XPATH.TOOLBAR_MOVETO_BUTTON ) );
 		this.wait( 200, function(){
 			$MBOX.assertDropMenu.apply( casper );
 
-			var movemailXpath = $Utils.getToolbarDropMenu( '/div/div[2]' );
+			var movemailXpath = $XPATH.TOOLBAR_MOVETO_FOLDER_2_MENU;
 			this.click( x( movemailXpath ) );
 			this.test.info( "Move clicked." );
 
@@ -301,26 +336,37 @@ casper.then(function(){
 // })
 
 //移动到 新建分类
-// casper.then(function(){
-// 	casper.click( x( $Utils.getModuleXpath( '//tr[5]//td[1]' ) ) );
-// 	casper.wait( 800, function(){
-// 		this.test.info( "Test move mail..." );
-// 		this.mouseEvent( "mousedown", x( $Utils.getToolbarXpath( '/div/div[contains(.,"移动到")]' ) ) );
-// 		this.wait( 200, function(){
-// 			$MBOX.assertDropMenu.apply( casper );
+casper.then(function(){
+	casper.click( $MBOX.getCheckBox() );
+	casper.wait( 800, function(){
+		this.test.info( "Test move mail..." );
+		this.mouseEvent( "mousedown", x( $Utils.getToolbarXpath( '/div/div[contains(.,"移动到")]' ) ) );
+		this.wait( 200, function(){
+			$MBOX.assertDropMenu.apply( casper );
 
-// 			var movetoNewFolder = $Utils.getToolbarDropMenu( '/div[3]' );
-// 			this.test.info( /*movetoNewFolder,*/ this.fetchText( x( movetoNewFolder )) );
-// 			this.click( x( movetoNewFolder ) );
-// 			this.test.info( "Create New Folder Clicked." );
+			var movetoNewFolder = $Utils.getToolbarDropMenu( '/div[3]//a' );
 
-// 			casper.wait(200, function(){
-// 				$MBOX.assertDialog();
-// 			})
-// 			// $MBOX.withdrawTest();
-// 		})
-// 	})
-// })
+			var exist = this.exists({
+				type: "xpath",
+				path: movetoNewFolder
+			})
+
+			if( !exist ){
+				this.test.error( "move to new folder menu not exists" );
+			} else {
+				this.test.info( /*movetoNewFolder,*/ this.fetchText( x( movetoNewFolder )) );
+				this.click( x( movetoNewFolder ) );
+				this.test.info( "Create New Folder Clicked." );
+
+				casper.wait(200, function(){
+					$Utils.capture( "dialog.png" );
+					$MBOX.assertDialog();
+				})
+			}
+			// $MBOX.withdrawTest();
+		})
+	})
+})
 
 casper.run(function(){
 	this.test.renderResults( true );
