@@ -3,8 +3,9 @@ var x = require( "casper" ).selectXPath;
 var clientutils;
 
 var $CONFIG = {};
-$CONFIG.CAPTURE = false;
-$CONFIG.NEWROW = true;
+$CONFIG.capture = false;
+$CONFIG.newrow = true;
+$CONFIG.prefix = "casper";
 
 //用户信息
 var $USER = {};
@@ -49,13 +50,21 @@ $Utils.getWithDrawXpath = function(){
 	return $Utils.getMsgBoxSuccXpath() + "//a";
 }
 
+$Utils.getWidgetDialogXpath = function(){
+	return '//div[contains(@class, "js-w-dialogbox")][contains(@style, "display: block")]';
+}
+
+$Utils.getMboxNavXpath = function(){
+	return '//div[@id="nav-mbox"]';
+}
+
 /**
  * 封装一层截图，可供全局配置
  * @param  {String} path 保存路径
  * @return {void}      
  */
 $Utils.capture = function( path ){
-	if( $CONFIG.CAPTURE ){
+	if( $CONFIG.capture ){
 		casper.capture( path );
 	}
 }
@@ -76,7 +85,10 @@ $MBOX.checkListUI = function(){
 	})
 
 	var codeOk = result.code === "S_OK";
-	casper.test.assert( codeOk, "List S_OK" )
+	if( !codeOk ){
+		casper.test.error( "List not ok." );
+	}
+	// casper.test.assert( codeOk, "List S_OK" )
 
 	list = result.data;
 	var count = 0;
@@ -104,18 +116,29 @@ $MBOX.checkListUI = function(){
 	})
 
 	//判断分页数、UI邮件数量是否相同
-	var pageSizeOk = ( count === rowLength ) && ( count === pageSize );
-	casper.test.assert( pageSizeOk, "Check PageSize: " + count + ", " + rowLength );
+	var pageSizeOk = ( count === rowLength ) /*&& ( count === pageSize )*/;
+	if( !pageSizeOk ){
+		casper.test.error( "PageSize not match." )
+	}
 }
 
-$MBOX.withdrawTest = function( callback ){
-	casper.wait(1000, function(){
+$MBOX.withdrawTest = function( callback, withdraw ){
+	if( typeof callback == "boolean"){
+		withdraw = callback;
+	}
+
+	casper.wait( 1000, function(){
 		//判断操作成功的提示是否存在
 		var msgbox = x( $Utils.getMsgBoxSuccXpath() );
 		var msg = this.exists( msgbox );
 		casper.test.assert( msg, 'MsgBox: ' + this.fetchText( msgbox ) );
 
 		$MBOX.checkListUI();
+
+		if( withdraw === false ){
+			callback && callback();
+			return;
+		}
 
 		//点击撤销后校验UI
 		var withdrawLink = x( $Utils.getWithDrawXpath() );
@@ -145,13 +168,17 @@ $MBOX.assertDialog = function(){
 
 //获取第五封信的可点击checkbox
 $MBOX.getCheckBox = function(){
-	if( !$CONFIG.NEWROW ){
+	if( !$CONFIG.newrow ){
 		return x( $Utils.getModuleXpath('/div//tr[5]/td[1]') );
 	} else {
 		return x( $Utils.getModuleXpath('/div//table[5]//td[1]') );
 	}
 }
 
+$MBOX.assertFolder = function( name ){
+	var folderXpath = $Utils.getMboxNavXpath() + "//span[contains(@class, 'js-name')][contains(., " + name + ")]";
+	casper.test.assert( casper.exists( x( folderXpath ) ), "Folder " + name + " exists." );
+}
 
 //选择器
 var $SELECTOR = {};
@@ -177,16 +204,16 @@ casper.userAgent('Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like G
 
 //404和500
 casper.on('http.status.404', function( resource ) {
-    this.tester.error( '404: ' + resource.url );
+    casper.tester.error( '404: ' + resource.url );
 });
 
 casper.on('http.status.500', function( resource ) {
-    this.tester.error( '500: ' + resource.url );
+    casper.tester.error( '500: ' + resource.url );
 });
 
 //页面出现JS错误
 casper.on( "page.error", function( msg, trace ) {
-    this.tester.error( "Error: " + msg, "PAGE.ERROR" );
+	this.echo("Error: " + msg + "// " +  require( 'utils' ).dump( trace ), "ERROR");
 });
 
 
@@ -328,13 +355,6 @@ casper.then(function(){
 	})
 })
 
-// casper.then(function(){
-// 	this.evaluate(function(){
-// 		$MF.clearDestroyModules();
-// 		$MF.clearUnusedModules();
-// 	})
-// })
-
 //移动到 新建分类
 casper.then(function(){
 	casper.click( $MBOX.getCheckBox() );
@@ -354,19 +374,35 @@ casper.then(function(){
 			if( !exist ){
 				this.test.error( "move to new folder menu not exists" );
 			} else {
-				this.test.info( /*movetoNewFolder,*/ this.fetchText( x( movetoNewFolder )) );
+				// this.test.info( /*movetoNewFolder,*/ this.fetchText( x( movetoNewFolder )) );
 				this.click( x( movetoNewFolder ) );
 				this.test.info( "Create New Folder Clicked." );
 
-				casper.wait(200, function(){
-					$Utils.capture( "dialog.png" );
+				casper.wait( 200, function(){
 					$MBOX.assertDialog();
+					var folderName = this.evaluate(function(){
+						var name = "casper_" + new Date().getTime();
+						$( '.js-w-dialogbox' ).filter( ':visible' ).find('input').val( name );
+						// $( '.w-btn-submit' ).filter( ':visible' ).click();
+						return name;
+					})
+
+					var submitBtn = $Utils.getWidgetDialogXpath() + "//div[contains(@class, 'w-btn-submit')]";
+					this.click( x( submitBtn ) );
+					this.wait( 1800, function(){
+						$MBOX.assertFolder( folderName );
+					})
 				})
 			}
-			// $MBOX.withdrawTest();
 		})
 	})
 })
+
+//验证列表数据是否正常，接下来进入读信测试
+casper.then(function(){
+	$MBOX.withdrawTest( false );
+})
+
 
 casper.run(function(){
 	this.test.renderResults( true );
