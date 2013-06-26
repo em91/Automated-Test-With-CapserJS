@@ -1,9 +1,11 @@
-使用CapserJS对网易邮箱简约5.0进行模块功能测试
-============================
+使用CapserJS对 JY5 进行模块功能测试
+-------------
 
 module文件夹下放置各模块的测试用例，测试用例依赖于 config.js, init.js, utils.js, login.js，执行命令如下;
 
-> casperjs test mbox.js --includes=config.js
+<pre><code>
+	casperjs test mbox.js --includes=config.js,utils.js,init.js,login.js
+</code></pre>
 
 
 收件箱功能点：
