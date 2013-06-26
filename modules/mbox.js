@@ -33,7 +33,7 @@ $MBOX.checkListUI = function(  ){
 	for( var i = 0, l = list.length; i < l; i++ ){
 		var isExist = casper.exists({
 			type: 'xpath',
-			path: $Utils.getXpathByMid( list[i].mid )
+			path: $Utils.getCheckBoxXpathByMid( list[i].mid )
 		});
 
 		if( isExist ){

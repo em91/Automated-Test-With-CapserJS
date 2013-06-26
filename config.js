@@ -1,4 +1,11 @@
-var casper = require( "casper" ).create();
+// var casper = require( "casper" ).create();
+
+var casper = require('casper').create({
+    verbose: true,
+    logLevel: "debug"
+});
+
+
 var x = require( "casper" ).selectXPath;
 var clientutils;
 
@@ -9,7 +16,7 @@ var clientutils;
  * @type {Object}
  */
 var $CONFIG = {};
-$CONFIG.capture = false;
+$CONFIG.capture = true;
 $CONFIG.prefix = "casper";
 $CONFIG.screenshot = "screenshot";
 

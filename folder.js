@@ -44,5 +44,13 @@ var $Folder = {
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
 		none: [ $XPATH.TOOLBAR_GUIDE ],
 		notexist: [ $XPATH.PAGER_BOTTOM ]
+	},
+
+	"read": {
+		name: "【只读】读信测试",
+		check: [],
+		always: [],
+		none: [],
+		notexist: []
 	}
 }
