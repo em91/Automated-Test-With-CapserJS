@@ -210,36 +210,6 @@ var $Folder = {
 // 	casper.thenOpen( url );
 // })
 
-//点击侧边栏收件箱，等待100ms后截图收件箱
-// casper.thenClick( $SELECTOR.MBOXNAV_FOLDER_1, function(){
-	// casper.waitForSelector( {
-	// 	type: "xpath",
-	// 	path: $XPATH.LIST_CONTAINER_EXIST
-	// }, function(){
-// 		var done = this.exists({
-// 			type: 'xpath',
-// 			path: /*$XPATH.LIST_CONTAINER_EXIST*/'//div[starts-with(@id, "module_mbox")]//div[contains(@class, "js-list-container")]'
-// 		});
-
-// 		this.test.assert( done, "Inbox Load success" );
-// 		$Utils.capture( 'mbox/jy5_mbox.png' );
-// 	})
-// })
-
-
-// 收件箱
-// 1、各分类下工具栏，在勾选时显示 done
-// 2、只有一页的情况下，底部翻页按钮不显示 done
-// 3、星标功能正常
-// 4、移动到、删除操作可用，且可撤销 done
-// 5、标记为已读后，无需刷新页面
-// 6、联系人浮层出现正常，功能都可点
-// 7、邮件列表的icon是否正常显示
-// 8、有未读时，显示未读封数以及“全部标记为已读” done
-// 9、邮件日历跳转是否正确
-// 10、代收文件夹是否正确显示i图标以及相关信息 done
-// 11、草稿箱的邮件不能移动到其他分类，也不能从其他分类移动到草稿箱
-
 var _folderIndex = 0;
 var _folderArr = [];
 for( folder in $Folder ){
