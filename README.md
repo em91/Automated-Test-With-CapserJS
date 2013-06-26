@@ -3,9 +3,7 @@
 
 module文件夹下放置各模块的测试用例，测试用例依赖于 config.js, init.js, utils.js, login.js，执行命令如下;
 
-<pre><code>
-	casperjs test mbox.js --includes=config.js,utils.js,init.js,login.js
-</code></pre>
+<pre><code> casperjs test mbox.js --includes=config.js,utils.js,init.js,login.js </code></pre>
 
 
 收件箱功能点：
