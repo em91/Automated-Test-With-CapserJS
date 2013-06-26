@@ -24,5 +24,5 @@ casper.waitFor(function check(){
 	})
 }, function then(){
 	this.test.assertUrlMatch( $REG.JY5_LOGIN_OK_URL, 'Login success.' );
-	$Utils.capture( 'mbox/welcome.png' );
+	$Utils.capture( 'welcome.png' );
 })

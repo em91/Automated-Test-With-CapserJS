@@ -45,7 +45,7 @@ $Utils.getMboxNavFolderXpath = function( name ){
 //封装一层截图，可供全局配置
 $Utils.capture = function( path ){
 	if( $CONFIG.capture ){
-		casper.capture( path );
+		casper.capture( $CONFIG.screenshot + "/" + ( $MODULE || "" ) + "/" + path );
 	}
 }
 

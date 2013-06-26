@@ -11,6 +11,7 @@ var clientutils;
 var $CONFIG = {};
 $CONFIG.capture = false;
 $CONFIG.prefix = "casper";
+$CONFIG.screenshot = "screenshot";
 
 
 /**

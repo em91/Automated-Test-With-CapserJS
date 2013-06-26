@@ -13,3 +13,19 @@ casper.on('http.status.500', function( resource ) {
 casper.on( "page.error", function( msg, trace ) {
 	this.echo("Error: " + msg + "// " +  require( 'utils' ).dump( trace ), "ERROR");
 });
+
+
+var fs = require('fs');
+
+//删除xunit输出
+if( fs.exists( "xunit.xml" ) ){
+	fs.remove( "xunit.xml" );
+}
+
+//删除截图
+fs.removeTree( $CONFIG.screenshot );
+
+//如果开启了截图，就创建截图文件夹
+if( $CONFIG.capture ){
+	fs.makeTree( $CONFIG.screenshot );
+}
