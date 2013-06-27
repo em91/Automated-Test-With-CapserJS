@@ -30,6 +30,11 @@ $XPATH.TOOLBAR_POPICON = $Utils.getToolbarXpath( '/a[@class="w-icon-skin  ico-i 
 $XPATH.LIST_EMPTY = $Utils.getModuleXpath( '//div[@class="m-emp-tlst"]' );
 $XPATH.TOOLBAR_GUIDE = $Utils.getToolbarXpath( '/div[contains(@class, "guide")]');
 $XPATH.PAGER_BOTTOM = $Utils.getModuleXpath( '//div[@class="p-mx-pagectrl"]//div[contains(@class,"js-cmds")]/div[not(@style)]' );
+$XPATH.TOOLBAR_BACK_BUTTON = $Utils.getToolbarXpath( '/div[contains(.,"<<")]' );
+$XPATH.TOOLBAR_FORWARD_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "转发")]' );
+$XPATH.TOOLBAR_REPLY_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复")]' );
+$XPATH.TOOLBAR_REPLYALL_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复全部")]' );
+$XPATH.READ_QUICKREPLY = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']" );
 
 
 /**
@@ -37,6 +42,13 @@ $XPATH.PAGER_BOTTOM = $Utils.getModuleXpath( '//div[@class="p-mx-pagectrl"]//div
  * @type {Object}
  */
 var $Folder = {
+	"inbox": {
+		name: "收件箱",
+		check: [ $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
+		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
+		none: [ $XPATH.TOOLBAR_GUIDE ]
+	},
+
 	"normal": {
 		name: "【可写】供移动测试",
 		check: [ $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
@@ -66,7 +78,7 @@ var $Folder = {
 	},
 
 	"unread": {
-		name: "【只读】 未读文件夹"	,
+		name: "【只读】 未读文件夹",
 		check: [],
 		none: [],
 		always: []
