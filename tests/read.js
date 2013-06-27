@@ -1,3 +1,10 @@
+var $MID = {
+	"translate": "51:1tbiMw5IMFEAFYRatgABso",
+	"cc": "51:1tbiMwxIjFEAFYRRXQAAm3",
+	"quickreply": "51:1tbiMwxIjFEAFYRRXQAAm3",
+	"link": "51:1tbiMw5IMFEAFYRatgAAsp"
+}
+
 //从列表进入读信
 casper.thenClick( x( $Utils.getMboxNavFolderXpath( $Folder.read.name ) ), function(){
 	casper.waitForSelector({
@@ -20,11 +27,6 @@ casper.thenClick( x ( $Utils.getXpathByMid( $MID.link ) ), function(){
 		return false;
 	}, function(){
 		$Utils.capture( "read.png" );
-
-
-		casper.withFrame('', function(){
-
-		})
 	}, function(){
 		this.test.error( "no read.do request." );
 	})
