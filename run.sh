@@ -17,4 +17,5 @@ do
 	done
 done
 
+echo casperjs test tests --includes=$INCLUDES
 casperjs test tests --includes=$INCLUDES
