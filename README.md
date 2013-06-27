@@ -1,12 +1,18 @@
 Automated Test For JY5 @ Netease
 -------------
 
-module文件夹下放置各模块的测试用例，测试用例依赖于 config.js, init.js, utils.js, xpath.js, folder.js, login.js
+目录结构：
+
+* const		xpath, selector 等常量
+* core		全局设置( useragent, 用户信息, 全局事件等 )
+* test   	各模块的测试用例
+* utils 	各模块需要用到的Util
+* screenshot 默认的截图路径
 
 
 命令：
 
-<pre><code> casperjs test modules/mbox.js --includes=config.js,init.js,utils.js,xpath.js,folder.js,login.js </code></pre>
+<pre><code> sh run.sh </code></pre>
 
 
 支持参数：

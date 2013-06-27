@@ -26,8 +26,8 @@ $CONFIG.screenshot = "screenshot";
  * @type {Object}
  */
 var $USER = {};
-$USER.USERNAME = "";
-$USER.PASSWORD = "";
+$USER.USERNAME = "autojy5";
+$USER.PASSWORD = "aotujy51234";
 
 /**
  * url相关
