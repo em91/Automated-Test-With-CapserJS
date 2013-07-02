@@ -15,14 +15,14 @@ $SELECTOR.MBOXNAV_FOLDER_1 = '#folder_1 .js-label';
  */
 var $XPATH = {};
 $XPATH.LIST_CONTAINER_EXIST = $Utils.getModuleXpath('//div[contains(@class, "js-list-container")]');
-$XPATH.TOOLBAR_MARK_BUTTON = $Utils.getToolbarXpath( '/div[contains(.,"标记为")]' );
-$XPATH.TOOLBAR_MOVETO_BUTTON = $Utils.getToolbarXpath( '/div[contains(.,"移动到")]' );
+$XPATH.TOOLBAR_MARK_BUTTON = $Utils.getToolbarXpath( '/div[contains(.,"标记为")]/div' );
+$XPATH.TOOLBAR_MOVETO_BUTTON = $Utils.getToolbarXpath( '//div[contains(@class, "w-button-dd")][contains(.,"移动到")]/div' );
 $XPATH.TOOLBAR_MARK_READ_UNREAD_MENU = $Utils.getToolbarDropMenu( '/div/div[1]' );
 $XPATH.TOOLBAR_MARK_STAR_UNSTAR_MENU = $Utils.getToolbarDropMenu( '/div/div[2]' );
 $XPATH.TOOLBAR_MOVETO_FOLDER_2_MENU = $Utils.getToolbarDropMenu( '/div/div[2]' );
-$XPATH.TOOLBAR_REPORT_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "举报")]' );
-$XPATH.TOOLBAR_DELETE_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "删除")]' );
-$XPATH.TOOLBAR_MORE_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "更多")]' );
+$XPATH.TOOLBAR_REPORT_BUTTON = $Utils.getToolbarXpath( '//div[contains(@class, "w-button-txt")][contains(., "举报")]/div' );
+$XPATH.TOOLBAR_DELETE_BUTTON = $Utils.getToolbarXpath( '//div[contains(@class, "w-button-txt")][contains(., "删除")]/div' );
+$XPATH.TOOLBAR_MORE_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "更多")]/div' );
 $XPATH.TOOLBAR_CALENDAR = $Utils.getToolbarXpath( '//a[contains(@class, "js-datepicker")]' );
 $XPATH.TOOLBAR_PAGER = $Utils.getToolbarXpath( '/div[@class="page js-widget"]' );
 $XPATH.TOOLBAR_PAGER_NEXT = $Utils.getToolbarXpath( '/div[@class="m-page f-fr"]' );
@@ -31,9 +31,9 @@ $XPATH.LIST_EMPTY = $Utils.getModuleXpath( '//div[@class="m-emp-tlst"]' );
 $XPATH.TOOLBAR_GUIDE = $Utils.getToolbarXpath( '/div[contains(@class, "guide")]');
 $XPATH.PAGER_BOTTOM = $Utils.getModuleXpath( '//div[@class="p-mx-pagectrl"]//div[contains(@class,"js-cmds")]/div[not(@style)]' );
 $XPATH.TOOLBAR_BACK_BUTTON = $Utils.getToolbarXpath( '/div[contains(.,"<<")]' );
-$XPATH.TOOLBAR_FORWARD_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "转发")]' );
-$XPATH.TOOLBAR_REPLY_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复")]' );
-$XPATH.TOOLBAR_REPLYALL_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复全部")]' );
+$XPATH.TOOLBAR_FORWARD_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "转发")]/div' );
+$XPATH.TOOLBAR_REPLY_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复")]/div' );
+$XPATH.TOOLBAR_REPLYALL_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复全部")]/div' );
 $XPATH.READ_QUICKREPLY = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']" );
 
 
