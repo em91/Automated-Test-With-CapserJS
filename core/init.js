@@ -14,6 +14,10 @@ casper.on( "page.error", function( msg, trace ) {
 	this.echo("Error: " + msg + "// " +  require( 'utils' ).dump( trace ), "ERROR");
 });
 
+// casper.options.onResourceRequested = function( casper, resource ){
+// 	this.echo( "resource received: " + resource.url );
+// }
+
 
 var fs = require('fs');
 
