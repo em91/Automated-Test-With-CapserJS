@@ -5,7 +5,12 @@ var $ComposeTestCase = {
 		"mailto": "mailto",
 		"identifylink": "identifylink"
 	},
+	
 	readthread: {
 
+	},
+
+	quickReply: {
+		"normal": "Hey buddy"
 	}
 };
