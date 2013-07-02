@@ -35,6 +35,10 @@ $XPATH.TOOLBAR_FORWARD_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "转�
 $XPATH.TOOLBAR_REPLY_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复")]/div' );
 $XPATH.TOOLBAR_REPLYALL_BUTTON = $Utils.getToolbarXpath( '/div[contains(., "回复全部")]/div' );
 $XPATH.READ_QUICKREPLY = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']" );
+$XPATH.READ_QUICKREPLY_TEXTAREA = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//textarea" );
+$XPATH.READ_QUICKREPLY_BUTTONS = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//div[contains(@class,'js-quickBtns')][@style!='display: none;']" );
+$XPATH.READ_QUICKREPLY_BUTTON_OK = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//div[contains(@class,'js-quickBtns')][@style!='display: none;']/div[contains(@class,'w-btn-submit')]" );
+
 
 
 /**
