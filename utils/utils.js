@@ -15,7 +15,7 @@ $Utils.getToolbarXpath = function( xpath ){
 }
 //获取工具栏下拉菜单
 $Utils.getToolbarDropMenu = function( xpath ){
-	return $Utils.getToolbarXpath( '/div[contains(@class,"m-lst")][contains(@class, "open")]' + xpath );
+	return $Utils.getToolbarXpath( '//div[contains(@class,"m-lst")][contains(@class, "open")]' + xpath );
 }
 //根据mid获取checkbox xpath
 $Utils.getCheckBoxXpathByMid = function( mid ){
@@ -59,6 +59,24 @@ $Utils.capture = function( path ){
 	if( $CONFIG.capture ){
 		casper.capture( $CONFIG.screenshot + "/" + ( $MODULE || "" ) + "/" + path );
 	}
+}
+
+//点击标记为，下拉菜单截图
+$Utils.assertDropMenu = function(){
+	var menuListXpath = $Utils.getToolbarXpath( '//div[contains(@class,"m-lst")][contains(@class, "open")]' );
+	casper.test.assert( casper.exists( x( menuListXpath ) ), 'Dropmenu Ok' );
+}
+
+//校验弹框是否显示中
+$Utils.assertDialog = function(){
+	var dialogXpath = '//div[contains(@class,"js-w-dialogbox")][contains(@style,"display: block")]';
+	casper.test.assert( casper.exists( x( dialogXpath ) ), 'Dialog Ok' );
+}
+
+//校验某个文件夹是否在侧边栏存在
+$Utils.assertFolder = function( name ){
+	var folderXpath = $Utils.getMboxNavXpath() + "//span[contains(@class, 'js-name')][contains(., " + name + ")]";
+	casper.test.assert( casper.exists( x( folderXpath ) ), "Folder " + name + " exists." );
 }
 
 //校验组合xpath是否存在
@@ -147,7 +165,7 @@ $Utils.send = function( name, html, action ){
 				composeId: composeId,
 				content: html,
 				html: true,
-				subject: name + " [ " + new Date().getTime() + " ] ",
+				subject: name + "[" + new Date().getTime() + "]",
 				to: $CONF.uid
 			}),
 			async: false,
@@ -186,19 +204,7 @@ $Utils.send = function( name, html, action ){
 	return mail;
 }
 
-$Utils.deleteMailBySubject = function( subject ){
-	if( !subject ){
-		casper.test.info( "no subject." );
-		return;
-	}
-	if( typeof subject === "object" ){
-		var subjects = subject;
-		for( var subject in subjects ){
-			$Utils.deleteMailBySubject( subjects[ subject ] );
-		}
-		return;
-	}
-
+$Utils.getMidBySubject = function( subject ){
 	var mids = casper.evaluate(function( subject ){
 		var mids = [];
 		$.ajax({
@@ -210,6 +216,7 @@ $Utils.deleteMailBySubject = function( subject ){
 			type: "POST",
 			success: function( result ){
 				if( result.code === "S_OK" ){
+					// __utils__.echo( JSON.stringify( result ) ); 
 					for( var i = 0, l = result.data.length; i < l; i++ ){
 						mids.push( result.data[i].mid );
 					}
@@ -224,6 +231,24 @@ $Utils.deleteMailBySubject = function( subject ){
 	}, {
 		subject: subject
 	})
+
+	return mids;
+}
+
+$Utils.deleteMailBySubject = function( subject ){
+	if( !subject ){
+		casper.test.info( "no subject." );
+		return;
+	}
+	if( typeof subject === "object" ){
+		var subjects = subject;
+		for( var subject in subjects ){
+			$Utils.deleteMailBySubject( subjects[ subject ] );
+		}
+		return;
+	}
+
+	var mids = $Utils.getMidBySubject( subject );
 
 	casper.evaluate(function( mids, subject ){
 		$.ajax({
