@@ -99,6 +99,7 @@ casper.test.begin("Test Read Module", {
 				that.testDeleteButton();
 				that.testReportButton();
 				that.testMoveTo();
+				that.testQuickReply();
 			}, function(){
 				casper.test.error( "no read.do request." );
 			})
@@ -208,6 +209,69 @@ casper.test.begin("Test Read Module", {
 
 			})
 		});
+	},
+
+
+	/**
+	 * 测试快捷回复的功能
+	 * @return {void} 
+	 */
+	testQuickReply: function(){
+		casper.wait( 200, function(){
+			casper.test.comment( "Test Quickreply..." );
+			casper.evaluate(function(){
+				$(".js-quickReply").filter(":visible").trigger("mouseenter");
+				$("textarea").filter(":visible").focus()
+			})
+			casper.wait(500, function(){
+				$Utils.capture( "QuickReplyClick.png" );
+				casper.waitForSelector({
+					type: "xpath",
+					path: $XPATH.READ_QUICKREPLY_BUTTONS
+				}, function(){
+					$Utils.capture( "QuickReplyFocus.png" );
+
+					//测试textarea的初始高度对不对
+					var height = casper.evaluate(function(){
+						return $("textarea").filter(":visible").height();
+					})
+					casper.test.assertEqual( height, 100, "Quickreply Textarea OK." );
+
+					//填写内容
+					casper.sendKeys({
+						type: "xpath",
+						path: $XPATH.READ_QUICKREPLY_TEXTAREA
+					}, $ComposeTestCase.quickReply.normal);
+
+					$Utils.capture( "QuickReplyFill.png" );
+
+					casper.click( x( $XPATH.READ_QUICKREPLY_BUTTON_OK ) );
+					casper.waitForResource( function( resource ){
+						if( resource.url.indexOf( "xhr/compose/compose.do" ) > -1 ){
+							return true;
+						}
+						return false;
+					}, function(){
+						casper.test.assert( true, "compose.do requested." )
+						casper.wait( 1000, function(){
+							$Utils.capture( "QuickReplyDone.png" );
+
+							//发送完毕，输入框应当收起
+							var height = casper.evaluate(function(){
+								return $("textarea").filter(":visible").height();
+							})
+							casper.test.assertEqual( height, 20, "Quickreply Send Done, Textarea OK." );
+
+							//并且有发送成功的提示
+							this.test.assertEqual(this.fetchText("#js-msgbox-tip"), "邮件发送成功!", "QuickReply Tip OK");
+						})
+						
+					}, function(){
+						casper.test.error( "no compose.do request." );
+					})
+				})
+			})
+		})
 	},
 
 	done: function(){
