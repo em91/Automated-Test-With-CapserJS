@@ -11,7 +11,7 @@ casper.test.begin("Test Read Module", {
 
 		//发信
 		casper.then(function(){
-			var subject = $Utils.send( $ComposeTestCase.read );
+			var subject = $Utils.send( $RAW.READ );
 			$GLOBAL.mails = subject;
 			this.test.info( "mails sent." );
 
@@ -41,8 +41,8 @@ casper.test.begin("Test Read Module", {
 	test: function( test ){
 		var that = this;
 		casper.wait( 2000, function(){
-			that.goInbox();
 			that.testNormal();
+			that.testLinks();
 		});
 		this.done();
 	},
@@ -70,6 +70,7 @@ casper.test.begin("Test Read Module", {
 	 */
 	testNormal: function( ){
 		var that = this;
+		that.goInbox();
 		casper.thenClick( x ( $Utils.getXpathBySubject( $GLOBAL.mails.normal ) ), function(){
 			casper.test.comment( "Test Normal Read..." );
 			var readUrl = this.evaluate(function(){
@@ -271,6 +272,90 @@ casper.test.begin("Test Read Module", {
 					})
 				})
 			})
+		})
+	},
+
+
+	/**
+	 * 测试读信里的链接识别和响应
+	 * @return {void} 
+	 */
+	testLinks: function(){
+		var that = this;
+		that.goInbox();
+		casper.thenClick( x ( $Utils.getXpathBySubject( $GLOBAL.mails.links ) ), function(){
+			//等待读信请求返回后继续处理
+			this.waitForResource( function( resource ){
+				if( resource.url.indexOf( "xhr/msg/read.do" ) > -1 ){
+					return true;
+				}
+				return false;
+			}, function(){
+				this.waitForSelector({
+					type: "xpath",
+					path: $XPATH.READ_QUICKREPLY
+				}, function(){
+					//因为读信的事件有些是延迟绑定的，因此做下延迟以保证所有的JS已经执行完毕
+					this.wait(1000, function(){
+						$Utils.capture( "links.png" );
+						that.testIdentifyLink();
+						that.testClickLink();
+						that.testPostCard();
+					})
+				})
+			}, function(){
+				casper.test.error( "no read.do request." );
+			})
+		});
+	},
+
+	/**
+	 * 测试智能识别
+	 * @return {void} 
+	 */
+	testIdentifyLink: function(){
+		var html = casper.evaluate(function(){
+			return $( $( "iframe.js-mail-content" ).filter( ":visible" )[0].contentWindow.document.body ).html()
+		})
+		casper.test.assertEqual( html, $EXPECTED.READ.links );
+	},
+
+	/**
+	 * 测试链接点击
+	 * @return {void} 
+	 */
+	testClickLink: function(){
+		// @issue https://github.com/em91/Automated-Test-With-CapserJS/issues/1
+		// 由于当前JY的处理是在邮件append到页面后就替换了a标签的target，所以这个步骤可以省略，由testIdentifyLink代替
+		// casper.evaluate(function(){
+		// 	$( $( "iframe.js-mail-content" ).filter( ":visible" )[0].contentWindow.document.body ).find( "#js-open-newwindow" ).click();
+		// })
+
+
+		// casper.wait(2000, function(){
+		// 	this.echo( JSON.stringify( casper.popups ) );
+		// 	$Utils.capture( "click.png" );
+		// })
+	},
+
+	/**
+	 * 测试明信片点击
+	 * @return {void} 
+	 */
+	testPostCard: function(){
+		//@todo 这部分测试在线上走不通，会有JS error，等待下次修复上线
+		casper.evaluate(function(){
+			$( $( "iframe.js-mail-content" ).filter( ":visible" )[0].contentWindow.document.body ).find( "#read_postcard" ).click();
+		})
+
+		casper.waitFor(function(){
+			return this.evaluate(function(){
+				return location.hash === "#module=postcard";
+			})
+		}, function then(){
+			this.test.info( "PostCard Link OK." )
+		}, function timeout(){
+			this.test.error( "PostCard Link Fail." );
 		})
 	},
 
