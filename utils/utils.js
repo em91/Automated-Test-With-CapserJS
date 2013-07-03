@@ -79,6 +79,26 @@ $Utils.assertFolder = function( name ){
 	casper.test.assert( casper.exists( x( folderXpath ) ), "Folder " + name + " exists." );
 }
 
+//校验某个email的hovermenu是否显示，以及鼠标移开后能否正常隐藏
+$Utils.assertContactHoverMenu = function( email ){
+	casper.test.assertExist({
+		type: "xpath",
+		path: $Utils.getModuleXpath( "//div[contains(@class, 'm-ppnl-contact')][contains(@style, 'display: block;')]//div[contains(@class,'mail')][contains(.,'" + email + "')]" )
+	}, "HoverMenu Show OK.");
+
+
+	casper.evaluate(function(){
+		$(".m-ppnl-contact.open").trigger("mouseout");
+	})
+
+	casper.wait( 300, function(){
+		casper.test.assertDoesntExist({
+			type: "xpath",
+			path: $Utils.getModuleXpath( "//div[contains(@class, 'm-ppnl-contact')][contains(@style, 'display: block;')]//div[contains(@class,'mail')][contains(.,'" + email + "')]" )
+		}, "HoverMenu Hide OK.");
+	})
+}
+
 //校验组合xpath是否存在
 $Utils.checkXpathGroup = function( xpathArr ){
 	for( var i = 0, l = xpathArr.length; i < l; i++ ){
