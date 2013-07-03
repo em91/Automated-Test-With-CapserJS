@@ -11,7 +11,7 @@ casper.test.begin("Test Read Module", {
 
 		//发信
 		casper.then(function(){
-			var subject = $Utils.send( $RAW.READ );
+			var subject = $Utils.send( $DATA.READ );
 			$GLOBAL.mails = subject;
 			this.test.info( "mails sent." );
 
@@ -29,6 +29,7 @@ casper.test.begin("Test Read Module", {
 	 * @return {void}      
 	 */
 	tearDown: function( test ){
+		casper.test.error("teardown!!!!!!!!!");
 		$Utils.deleteMailBySubject( $GLOBAL.mails );
 	},
 
@@ -244,7 +245,7 @@ casper.test.begin("Test Read Module", {
 					casper.sendKeys({
 						type: "xpath",
 						path: $XPATH.READ_QUICKREPLY_TEXTAREA
-					}, $RAW.READ.quickReply);
+					}, $DATA.COMPOSE.quickReply);
 
 					$Utils.capture( "QuickReplyFill.png" );
 
@@ -383,7 +384,7 @@ casper.test.begin("Test Read Module", {
 		var html = casper.evaluate(function(){
 			return $( $( "iframe.js-mail-content" ).filter( ":visible" )[0].contentWindow.document.body ).html()
 		})
-		casper.test.assertEqual( html, $EXPECTED.READ.links );
+		casper.test.assertEqual( html, $DATA.READ.links );
 	},
 
 	/**
