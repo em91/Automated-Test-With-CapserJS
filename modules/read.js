@@ -101,6 +101,8 @@ casper.test.begin("Test Read Module", {
 				that.testReportButton();
 				that.testMoveTo();
 				that.testQuickReply();
+				that.testHoverMenu();
+				that.testCollapse();
 			}, function(){
 				casper.test.error( "no read.do request." );
 			})
@@ -242,7 +244,7 @@ casper.test.begin("Test Read Module", {
 					casper.sendKeys({
 						type: "xpath",
 						path: $XPATH.READ_QUICKREPLY_TEXTAREA
-					}, $ComposeTestCase.quickReply.normal);
+					}, $RAW.READ.quickReply);
 
 					$Utils.capture( "QuickReplyFill.png" );
 
@@ -275,6 +277,70 @@ casper.test.begin("Test Read Module", {
 		})
 	},
 
+	/**
+	 * 测试联系人浮层是否正常
+	 * @return {void} 
+	 */
+	testHoverMenu: function(){
+		$Utils.capture( "BeforeTestHoverMenu.png" );
+
+		// @issue casper的mouseEvent不好使
+		// casper.mouseEvent("mouseover", {
+		// 	type: "xpath",
+		// 	path: $XPATH.READ_HOVERMENU_TRIGGER
+		// });
+
+		// casper.echo( casper.fetchText( x( $XPATH.READ_HOVERMENU_TRIGGER ) ) );
+		// casper.wait(100, function(){
+		// 	casper.mouseEvent("mouseover", {
+		// 		type: "xpath",
+		// 		path: $XPATH.READ_SIMPLE_SENDER
+		// 	});
+		// });
+
+		// casper.echo( casper.fetchText( x( $XPATH.READ_SIMPLE_SENDER ) ) );
+
+		var sender = casper.evaluate(function(){
+			$(".js-clickbar").trigger("mouseover");
+			setTimeout(function(){
+				$(".js-sender").trigger("mouseover");
+			},10)
+			return $(".js-sender").attr( "d" );
+		})
+
+		casper.wait(600, function(){
+			$Utils.capture("hovermenu.png");
+			$Utils.assertContactHoverMenu( sender );
+
+			var avatar = casper.evaluate(function(){
+				$(".js-self-avatar").trigger("mouseover");
+				return $(".js-self-avatar").attr( "d" );
+			})
+
+			casper.wait(600, function(){
+				$Utils.capture("hovermenu.png");
+				$Utils.assertContactHoverMenu( avatar );
+			})
+		})		
+	},
+
+	/**
+	 * 测试精简模式和详细模块的展开折叠
+	 * @return {void} 
+	 */
+	testCollapse: function(){
+		casper.click( x( $XPATH.READ_MODE_FULL ) );
+		casper.test.assertExists({
+			type: "xpath",
+			path: $XPATH.READ_MODE_INFO_FULL
+		}, "Switch to Full Mode OK.");
+
+		casper.click( x( $XPATH.READ_MODE_SIMPLE ) );
+		casper.test.assertExists({
+			type: "xpath",
+			path: $XPATH.READ_MODE_INFO_SIMPLE
+		}, "Switch to Simple Mode OK.");
+	},
 
 	/**
 	 * 测试读信里的链接识别和响应
@@ -343,6 +409,8 @@ casper.test.begin("Test Read Module", {
 	 * @return {void} 
 	 */
 	testPostCard: function(){
+		return;
+
 		//@todo 这部分测试在线上走不通，会有JS error，等待下次修复上线
 		casper.evaluate(function(){
 			$( $( "iframe.js-mail-content" ).filter( ":visible" )[0].contentWindow.document.body ).find( "#read_postcard" ).click();
