@@ -38,7 +38,7 @@ $XPATH.READ_QUICKREPLY = $Utils.getModuleXpath( "//div[contains(@class, 'js-quic
 $XPATH.READ_QUICKREPLY_TEXTAREA = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//textarea" );
 $XPATH.READ_QUICKREPLY_BUTTONS = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//div[contains(@class,'js-quickBtns')][@style!='display: none;']" );
 $XPATH.READ_QUICKREPLY_BUTTON_OK = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//div[contains(@class,'js-quickBtns')][@style!='display: none;']/div[contains(@class,'w-btn-submit')]" );
-
+$XPATH.READ_IFRAME = $Utils.getModuleXpath( "//iframe" );
 
 
 /**
