@@ -53,34 +53,43 @@ $XPATH.READ_MODE_INFO_SIMPLE = $Utils.getModuleXpath( "//div[@class='js-simple']
  */
 var $Folder = {
 	"inbox": {
+		id: "",
 		name: "收件箱",
+		system: true,
 		check: [ $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
 		none: [ $XPATH.TOOLBAR_GUIDE ]
 	},
 
 	"normal": {
+		id: "",
 		name: "【可写】供移动测试",
+		system: false,
 		check: [ $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
 		none: [ $XPATH.TOOLBAR_GUIDE ]
 	},
 
 	"draft": {
+		id: "",
 		name: "草稿箱",
+		system: true,
 		check: [  $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON ],
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
 		none: [ $XPATH.TOOLBAR_GUIDE ]
 	},
 
-	"pop": {
-		name: "em91beta@163.com",
-		check: [ $XPATH.TOOLBAR_POPICON, $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
-		always: [ $XPATH.TOOLBAR_POPICON, $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
-		none: [ $XPATH.TOOLBAR_GUIDE ]
-	},
+	// "pop": {
+	// 	name: "em91beta@163.com",
+	// 	system: false,
+	// 	check: [ $XPATH.TOOLBAR_POPICON, $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
+	// 	always: [ $XPATH.TOOLBAR_POPICON, $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
+	// 	none: [ $XPATH.TOOLBAR_GUIDE ]
+	// },
 
 	"empty": {
+		id: "",
+		system: false,
 		name: "【只读】 空文件夹",
 		check: [],
 		none: [],
@@ -88,6 +97,8 @@ var $Folder = {
 	},
 
 	"unread": {
+		id: "",
+		system: false,
 		name: "【只读】 未读文件夹",
 		check: [],
 		none: [],
@@ -95,18 +106,12 @@ var $Folder = {
 	},
 
 	"onepage": {
+		id: "",
+		system: false,
 		name: "【只读】一页邮件",
 		check: [ $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
 		none: [ $XPATH.TOOLBAR_GUIDE ],
 		notexist: [ $XPATH.PAGER_BOTTOM ]
-	},
-
-	"read": {
-		name: "【只读】读信测试",
-		check: [],
-		always: [],
-		none: [],
-		notexist: []
 	}
 }
