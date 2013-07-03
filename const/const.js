@@ -39,6 +39,12 @@ $XPATH.READ_QUICKREPLY_TEXTAREA = $Utils.getModuleXpath( "//div[contains(@class,
 $XPATH.READ_QUICKREPLY_BUTTONS = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//div[contains(@class,'js-quickBtns')][@style!='display: none;']" );
 $XPATH.READ_QUICKREPLY_BUTTON_OK = $Utils.getModuleXpath( "//div[contains(@class, 'js-quickReply')][@style='']//div[contains(@class,'js-quickBtns')][@style!='display: none;']/div[contains(@class,'w-btn-submit')]" );
 $XPATH.READ_IFRAME = $Utils.getModuleXpath( "//iframe" );
+$XPATH.READ_SIMPLE_SENDER = $Utils.getModuleXpath( "//a[contains(@class, 'js-sender')]" );
+$XPATH.READ_HOVERMENU_TRIGGER = $Utils.getModuleXpath( "//div[contains(@class, 'js-clickbar')]" );
+$XPATH.READ_MODE_FULL = $Utils.getModuleXpath( "//a[contains(@class,'js-toggle-view-type')][contains(., '完整信息')]" );
+$XPATH.READ_MODE_SIMPLE = $Utils.getModuleXpath( "//a[contains(@class,'js-toggle-view-type')][contains(., '精简信息')]" );
+$XPATH.READ_MODE_INFO_FULL = $Utils.getModuleXpath( "//div[@class='js-full'][not(contains(@style,'display: none;'))]" );
+$XPATH.READ_MODE_INFO_SIMPLE = $Utils.getModuleXpath( "//div[@class='js-simple'][not(contains(@style,'display: none;'))]" );
 
 
 /**
