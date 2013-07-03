@@ -54,6 +54,11 @@ $Utils.getMboxNavFolderXpath = function( name ){
 	return $Utils.getMboxNavXpath() + "//div[contains(@class, 'js-label')][contains(@title, '" + name + "')]";
 }
 
+//根据文件夹名称获取左侧导航栏xpath
+$Utils.getMboxNavFolderXpathById = function( fid ){
+	return $Utils.getMboxNavXpath() + "//li[@id='folder_" + fid + "']/div/div";
+}
+
 //封装一层截图，可供全局配置
 $Utils.capture = function( path ){
 	if( $CONFIG.capture ){
@@ -133,6 +138,9 @@ $Utils.checkXpathGroupNotExist = function( xpathArr ){
 	return true;
 }
 
+/**
+ * 发信      
+ */
 $Utils.send = function( name, html, action ){
 
 	if( typeof name == "object" ){
@@ -191,20 +199,6 @@ $Utils.send = function( name, html, action ){
 			async: false,
 			type: "POST",
 			success: function( result ){
-				//{"code":"S_OK","data":{
-				//	"autosaveRcpts":true,
-				//	"composeInfo":{
-				//		"account":{ "mail":"autojy5@163.com","name":"autojy5"},
-				//		"attachments":[],"bcc":[],"cc":[],"charset":"",
-				//		"content":"hello world","html":true,"id":"",
-				//		"inlineResources":false,"priority":3,
-				//		"requestReadReceipt":false,"saveSentCopy":true,"scheduleDate":0,
-				//		"showOneRcpt":false,"subject":"Read Test Case","timedsendNotify":"",
-				//		"to":[{"mail":"autojy5@163.com","name":"autojy5"}]},
-				//		"other":{"draftId":"","pabResult":[{"action":"ignored","item":{"EMAIL;PREF":"autojy5@163.com","FN":"autojy5"}}],"saveSentFailed":"","saveSentId":"","saveSentIgnored":"",
-				//		"savedSent":{"imapFolder":"Sent Items","imapID":1372233670,"mailSize":1062,"mid":"xtbBEBhJMFD+QRxu8wABse","msid":272,"totalCapacity":3221225472,"usedCapacityKB":124333},"scheduledSent":"","sentTInfo":"wmsvr80:UMGowEDp50GB4MtRlP1vAA--.9075W"}
-				//	}
-				//}
 				composeResult = result;
 			},
 			error: function(){
@@ -224,6 +218,11 @@ $Utils.send = function( name, html, action ){
 	return mail;
 }
 
+/**
+ * 搜索指定主题的邮件的mid
+ * @param  {String} subject 
+ * @return {void}         
+ */
 $Utils.getMidBySubject = function( subject ){
 	var mids = casper.evaluate(function( subject ){
 		var mids = [];
@@ -255,6 +254,12 @@ $Utils.getMidBySubject = function( subject ){
 	return mids;
 }
 
+
+/**
+ * 彻底删除指定subject的邮件
+ * @param  {String} subject 
+ * @return {void}         
+ */
 $Utils.deleteMailBySubject = function( subject ){
 	if( !subject ){
 		casper.test.info( "no subject." );
@@ -291,5 +296,138 @@ $Utils.deleteMailBySubject = function( subject ){
 	},{
 		mids: mids,
 		subject: subject
+	})
+}
+
+/**
+ * 创建文件夹
+ * @return {void} 
+ */
+$Utils.createFolders = function(){
+	casper.test.comment( "createFolders" );
+	for( var type in $Folder ){
+		casper.echo( type );
+
+		//系统文件夹不能创建
+		if( $Folder[ type ].system ){
+			$Folder[ type ].id = casper.evaluate(function( type ){
+				return $FID[ type ]
+			}, { type: type } )
+			continue;
+		}
+
+		var id = casper.evaluate(function( name ){
+			var id;
+			$.ajax({
+				url: "/jy5/xhr/mbox/create.do?sid=" + $CONF.sid,
+				data: {
+					name: name
+				},
+				type: "POST",
+				success: function( result ){
+					if( result.code === "S_OK" ){
+						id = result.data[0];
+					}
+				},
+				error: function(){
+
+				},
+				async: false
+			})
+			return id;
+		}, {
+			name: $Folder[ type ].name
+		})
+
+		casper.echo( id );
+		casper.echo( $Folder[type].name + " !!!--" + id)
+		$Folder[ type ].id = id;
+		casper.echo( $Folder[type].id );
+	}
+	// casper.echo ( JSON.stringify( $Folder ) );
+}
+
+/**
+ * 删除文件夹
+ * @return {void} 
+ */
+$Utils.deleteFolders = function(){
+	casper.test.comment( "deleteFolders" );
+	for( var type in $Folder ){
+		var id = casper.evaluate(function( fid ){
+			$.ajax({
+				url: "/jy5/xhr/mbox/delete.do?sid=" + $CONF.sid,
+				data: {
+					fid: fid
+				},
+				type: "POST",
+				success: function( result ){
+					// __utils__.echo( JSON.stringify( result ) );
+					if( result.code === "S_OK" ){
+					}
+				},
+				error: function(){
+
+				},
+				async: false
+			})
+		}, {
+			fid: $Folder[ type ].id
+		})
+
+		delete $Folder[ type ].id;
+	}
+}
+
+/**
+ * 清空文件夹
+ */
+$Utils.emptyFolders = function(){
+	casper.test.comment( "emptyFolders" );
+	for( var type in $Folder ){
+		var id = casper.evaluate(function( fid ){
+			$.ajax({
+				url: "/jy5/xhr/mbox/empty.do?sid=" + $CONF.sid,
+				data: {
+					fid: fid,
+					permanently: true
+				},
+				type: "POST",
+				success: function( result ){
+					// __utils__.echo( JSON.stringify( result ) );
+					if( result.code === "S_OK" ){
+					}
+				},
+				error: function(){
+
+				},
+				async: false
+			})
+		}, {
+			fid: $Folder[ type ].id
+		})
+	}
+}
+
+$Utils.emptyInbox = function(){
+	casper.test.comment( "emptyInbox" );
+	casper.evaluate(function(){
+		$.ajax({
+			url: "/jy5/xhr/mbox/empty.do?sid=" + $CONF.sid,
+			data: {
+				fid: $FID.inbox,
+				permanently: true
+			},
+			type: "POST",
+			success: function( result ){
+				// __utils__.echo( JSON.stringify( result ) );
+				if( result.code === "S_OK" ){
+				}
+			},
+			error: function(){
+
+			},
+			async: false
+		})
 	})
 }
