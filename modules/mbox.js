@@ -10,8 +10,116 @@ casper.test.begin("Test Mbox Module", {
 			$Utils.createFolders();
 		})
 
-		casper.repeat(1, function(){
+		casper.repeat(40, function(){
+			casper.test.comment( "sending mails..." );
 			$Utils.send( $DATA.COMPOSE );
+		})
+
+		casper.thenEvaluate(function(){
+			location.reload(true);
+		})
+
+		casper.then(function(){
+			casper.test.comment( "move mails to setup folders..." );
+			var result = casper.evaluate(function(){
+				var listUrl = "/jy5/xhr/list/list.do?sid=" + $CONF.sid;
+				var param = {
+					fid: $MF.getCurrentSettings().settings.fid, 
+					start: 0,
+					limit: 120,
+					thread: $SDCache.isThread( $MF.getCurrentSettings().settings.fid )
+				};
+				return JSON.parse( __utils__.sendAJAX( listUrl, "POST", param, false ) );
+			})
+			var codeOk = result.code === "S_OK";
+			if( !codeOk ){
+				casper.test.error( "List not ok." + JSON.stringify( result ) );
+				return;
+			}
+
+			list = result.data;
+			casper.test.assertEqual( list.length, 120, "List Data Length Match." );
+
+			var mids = [];
+			for( var i = 0, l = list.length; i < l; i++ ){
+				mids.push( list[i].mid );
+			}
+
+			// casper.echo( JSON.stringify(mids) );
+
+			var moveToOnePage = casper.evaluate(function( fid, mids ){
+				var moveUrl = "/jy5/xhr/msg/update.do?sid=" + $CONF.sid;
+				var param = {
+					fid: fid,
+					thread: true,
+					mid: mids
+				}
+				return JSON.parse( __utils__.sendAJAX( moveUrl, "POST", param, false ) );
+			}, {
+				fid: $Folder[ "onepage" ].id,
+				mids: mids.splice( 0, 15 )
+			})
+
+			casper.test.assertEqual( moveToOnePage.code, "S_OK", "Move 15 mails to Onepage Folder Ok." );
+
+			var moveToNormal = casper.evaluate(function( fid, mids ){
+				var moveUrl = "/jy5/xhr/msg/update.do?sid=" + $CONF.sid;
+				var param = {
+					fid: fid,
+					thread: true,
+					mid: mids
+				}
+				return JSON.parse( __utils__.sendAJAX( moveUrl, "POST", param, false ) );
+			}, {
+				fid: $Folder[ "normal" ].id,
+				mids: mids.splice( 0, 70 )
+			})
+
+			casper.test.assertEqual( moveToNormal.code, "S_OK", "Move 70 mails to Normal Folder Ok." );
+
+			var moveToUnread = casper.evaluate(function( fid, mids ){
+				var moveUrl = "/jy5/xhr/msg/update.do?sid=" + $CONF.sid;
+				var param = {
+					fid: fid,
+					thread: true,
+					mid: mids
+				}
+				return JSON.parse( __utils__.sendAJAX( moveUrl, "POST", param, false ) );
+			}, {
+				fid: $Folder[ "unread" ].id,
+				mids: mids.splice( 0, 40 )
+			})
+
+			casper.test.assertEqual( moveToUnread.code, "S_OK", "Move 70 mails to Unread Folder Ok." );
+		})
+
+		casper.then(function(){
+			casper.click({
+				type: "xpath",
+				path: $XPATH.COMPOSE_BUTTON
+			});
+
+			var draftBtn = {
+				type: "xpath",
+				path: $XPATH.COMPOSE_DRAFT_BUTTON
+			};
+
+			casper.waitForSelector(draftBtn, function(){
+				casper.click( x( $XPATH.COMPOSE_DRAFT_BUTTON ) );
+			})
+
+			casper.waitForResource( function( resource ){
+				if( resource.url.indexOf( "xhr/compose/save.do" ) > -1 ){
+					return true;
+				}
+				return false;
+			}, function(){
+				casper.test.info( "Draft Save OK." )
+			}, function(){
+				casper.test.error( "Draft Save Fail." );
+				$Utils.capture( "savedraft.png" );
+			});
+
 		})
 
 		casper.thenEvaluate(function(){
@@ -25,7 +133,7 @@ casper.test.begin("Test Mbox Module", {
 	 * @return {void}      
 	 */
 	tearDown: function( test ){
-		$Utils.emptyInbox();
+		$Utils.emptySystemFolders();
 		$Utils.emptyFolders();
 		$Utils.deleteFolders();
 	},
@@ -33,9 +141,15 @@ casper.test.begin("Test Mbox Module", {
 	test: function( test ){
 		var that = this;
 		casper.then(function(){
-			that.testAllFolderBasic();
-			// that.goInbox();
-			// that.testDelete();
+			$Utils.capture( "test.png" );
+			// that.testAllFolderBasic();
+			that.goInbox();
+			that.testDelete();
+			that.testReport();
+			that.testMarkRead();
+			that.testMarkStar();
+			that.testMoveTo();
+			that.testMoveToNewFolder();
 		})
 		this.done();
 	},
@@ -60,8 +174,9 @@ casper.test.begin("Test Mbox Module", {
 
 			casper.waitForSelector({
 				type: "xpath",
-				path: $XPATH.LIST_CONTAINER_EXIST
+				path: $Utils.getListContainerXpath( folder.id )
 			}, function(){
+				$Utils.capture( _folderArr [ _folderIndex ] + ".png");
 				//未选中状态，检查always和none是否正常
 				var noneOk = $Utils.checkXpathGroup( folder.always.concat( folder.none ) );
 				casper.test.assert( noneOk, folder.name + " nocheck ok." );
@@ -90,27 +205,40 @@ casper.test.begin("Test Mbox Module", {
 		})
 	},
 
+	/**
+	 * 进入收件箱
+	 * @return {void} 
+	 */
 	goInbox: function(){
 		casper.thenClick( x( $Utils.getMboxNavFolderXpath( $Folder.normal.name ) ), function(){
-			this.click( $MBOX.getCheckBox() );
-			this.wait(100, function(){
-				var ok = $Utils.checkXpathGroup([
-					$XPATH.TOOLBAR_DELETE_BUTTON,
-					$XPATH.TOOLBAR_MARK_BUTTON,
-					$XPATH.TOOLBAR_REPORT_BUTTON,
-					$XPATH.TOOLBAR_MORE_BUTTON,
-					$XPATH.TOOLBAR_MOVETO_BUTTON
-				]);
+			casper.waitForSelector({
+				type: "xpath",
+				path: $Utils.getListContainerXpath( $Folder.normal.id )
+			}, function(){
+				$Utils.capture( "normal.png" );
+				this.click( $MBOX.getCheckBox() );
+				this.wait(100, function(){
+					var ok = $Utils.checkXpathGroup([
+						$XPATH.TOOLBAR_DELETE_BUTTON,
+						$XPATH.TOOLBAR_MARK_BUTTON,
+						$XPATH.TOOLBAR_REPORT_BUTTON,
+						$XPATH.TOOLBAR_MORE_BUTTON,
+						$XPATH.TOOLBAR_MOVETO_BUTTON
+					]);
 
-				this.test.assert( ok, "Toolbar OK." );
+					this.test.assert( ok, "Toolbar OK." );
+				})
 			})
 		});
 	},
 
+	/**
+	 * 测试删除功能
+	 * @return {void} 
+	 */
 	testDelete: function(){
 		//点击删除
 		casper.then(function(){
-			//点击第五封信
 			casper.click( $MBOX.getCheckBox() );
 			casper.wait(100, function(){
 				this.test.comment( "Test delete mail..." );
@@ -124,6 +252,10 @@ casper.test.begin("Test Mbox Module", {
 		})
 	},
 
+	/**
+	 * 测试举报功能
+	 * @return {void} 
+	 */
 	testReport: function(){
 		//点击举报
 		casper.then(function(){
@@ -138,6 +270,10 @@ casper.test.begin("Test Mbox Module", {
 		})
 	},
 
+	/**
+	 * 测试标记已读未读
+	 * @return {void} 
+	 */
 	testMarkRead: function(){
 		//标记为已读/未读
 		casper.then(function(){
@@ -146,7 +282,7 @@ casper.test.begin("Test Mbox Module", {
 				this.test.comment( "Test mark mail..." );
 				this.mouseEvent( "mousedown", x( $XPATH.TOOLBAR_MARK_BUTTON ) );
 				this.wait( 200, function(){
-					$MBOX.assertDropMenu.apply( casper );
+					$Utils.assertDropMenu.apply( casper );
 
 					var markUnreadXpath = $XPATH.TOOLBAR_MARK_READ_UNREAD_MENU;
 					this.click( x( markUnreadXpath ) );
@@ -166,7 +302,7 @@ casper.test.begin("Test Mbox Module", {
 				this.test.comment( "Test mark mail..." );
 				this.mouseEvent( "mousedown", x( $XPATH.TOOLBAR_MARK_BUTTON ) );
 				this.wait( 200, function(){
-					$MBOX.assertDropMenu.apply( casper );
+					$Utils.assertDropMenu.apply( casper );
 
 					var markStarXpath = $XPATH.TOOLBAR_MARK_STAR_UNSTAR_MENU;
 					this.click( x( markStarXpath ) );
@@ -186,7 +322,7 @@ casper.test.begin("Test Mbox Module", {
 				this.test.comment( "Test move mail..." );
 				this.mouseEvent( "mousedown", x( $XPATH.TOOLBAR_MOVETO_BUTTON ) );
 				this.wait( 200, function(){
-					$MBOX.assertDropMenu.apply( casper );
+					$Utils.assertDropMenu.apply( casper );
 
 					var movemailXpath = $XPATH.TOOLBAR_MOVETO_FOLDER_2_MENU;
 					this.click( x( movemailXpath ) );
@@ -206,7 +342,7 @@ casper.test.begin("Test Mbox Module", {
 				this.test.comment( "Test move mail..." );
 				this.mouseEvent( "mousedown", x( $Utils.getToolbarXpath( '/div/div[contains(.,"移动到")]' ) ) );
 				this.wait( 200, function(){
-					$MBOX.assertDropMenu.apply( casper );
+					$Utils.assertDropMenu.apply( casper );
 
 					var movetoNewFolder = $Utils.getToolbarDropMenu( '/div[3]//a' );
 
@@ -223,7 +359,7 @@ casper.test.begin("Test Mbox Module", {
 						this.test.info( "Create New Folder Clicked." );
 
 						casper.wait( 200, function(){
-							$MBOX.assertDialog();
+							$Utils.assertDialog();
 							var folderName = this.evaluate(function(){
 								var name = "casper_" + new Date().getTime();
 								$( '.js-w-dialogbox' ).filter( ':visible' ).find('input').val( name );
@@ -234,7 +370,7 @@ casper.test.begin("Test Mbox Module", {
 							var submitBtn = $Utils.getWidgetDialogXpath() + "//div[contains(@class, 'w-btn-submit')]";
 							this.click( x( submitBtn ) );
 							this.wait( 1800, function(){
-								$MBOX.assertFolder( folderName );
+								$Utils.assertFolder( folderName );
 							})
 						})
 					}
