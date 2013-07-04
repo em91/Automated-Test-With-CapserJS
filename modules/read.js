@@ -11,7 +11,7 @@ casper.test.begin("Test Read Module", {
 
 		//发信
 		casper.then(function(){
-			var subject = $Utils.send( $DATA.READ );
+			var subject = $Utils.send( $DATA.COMPOSE );
 			$GLOBAL.mails = subject;
 			this.test.info( "mails sent." );
 
@@ -29,7 +29,6 @@ casper.test.begin("Test Read Module", {
 	 * @return {void}      
 	 */
 	tearDown: function( test ){
-		casper.test.error("teardown!!!!!!!!!");
 		$Utils.deleteMailBySubject( $GLOBAL.mails );
 	},
 
