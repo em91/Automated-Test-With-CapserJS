@@ -45,7 +45,8 @@ $XPATH.READ_MODE_FULL = $Utils.getModuleXpath( "//a[contains(@class,'js-toggle-v
 $XPATH.READ_MODE_SIMPLE = $Utils.getModuleXpath( "//a[contains(@class,'js-toggle-view-type')][contains(., '精简信息')]" );
 $XPATH.READ_MODE_INFO_FULL = $Utils.getModuleXpath( "//div[@class='js-full'][not(contains(@style,'display: none;'))]" );
 $XPATH.READ_MODE_INFO_SIMPLE = $Utils.getModuleXpath( "//div[@class='js-simple'][not(contains(@style,'display: none;'))]" );
-
+$XPATH.COMPOSE_BUTTON = "//div[@id='nav-mbox']//a[contains(@class, 'js-compose')]";
+$XPATH.COMPOSE_DRAFT_BUTTON = $Utils.getModuleXpath( "//div[contains(@class, 'w-button-txt')]/div[contains(., '存草稿')]", "compose" )
 
 /**
  * 测试帐号的文件夹命名规则，以便对应到测试用例
@@ -63,7 +64,7 @@ var $Folder = {
 
 	"normal": {
 		id: "",
-		name: "【可写】供移动测试",
+		name: "普通自定义文件夹",
 		system: false,
 		check: [ $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
@@ -76,7 +77,8 @@ var $Folder = {
 		system: true,
 		check: [  $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON ],
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
-		none: [ $XPATH.TOOLBAR_GUIDE ]
+		none: [ $XPATH.TOOLBAR_GUIDE ],
+		notexist: [ $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ]
 	},
 
 	// "pop": {
@@ -90,7 +92,7 @@ var $Folder = {
 	"empty": {
 		id: "",
 		system: false,
-		name: "【只读】 空文件夹",
+		name: "空文件夹",
 		check: [],
 		none: [],
 		always: [ $XPATH.LIST_EMPTY ]
@@ -99,7 +101,7 @@ var $Folder = {
 	"unread": {
 		id: "",
 		system: false,
-		name: "【只读】 未读文件夹",
+		name: "未读文件夹",
 		check: [],
 		none: [],
 		always: []
@@ -108,7 +110,7 @@ var $Folder = {
 	"onepage": {
 		id: "",
 		system: false,
-		name: "【只读】一页邮件",
+		name: "一页邮件",
 		check: [ $XPATH.TOOLBAR_DELETE_BUTTON, $XPATH.TOOLBAR_REPORT_BUTTON, $XPATH.TOOLBAR_MARK_BUTTON, $XPATH.TOOLBAR_MOVETO_BUTTON, $XPATH.TOOLBAR_MORE_BUTTON ],
 		always: [ $XPATH.TOOLBAR_PAGER, $XPATH.TOOLBAR_PAGER_NEXT, $XPATH.TOOLBAR_CALENDAR ],
 		none: [ $XPATH.TOOLBAR_GUIDE ],
