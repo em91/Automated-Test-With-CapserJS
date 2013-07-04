@@ -201,6 +201,9 @@ $Utils.send = function( name, html, action ){
 				content: html,
 				html: true,
 				subject: name + "[" + new Date().getTime() + "]",
+				priority: 3,
+				requestReadReceipt: false,
+				showOneRcpt: false,
 				to: $CONF.uid
 			}),
 			async: false,
@@ -213,6 +216,8 @@ $Utils.send = function( name, html, action ){
 			},
 			contentType : 'application/json'
 		})
+
+		// __utils__.echo( html );
 
 		return composeResult.data.composeInfo.subject;
 	}, {
