@@ -294,6 +294,10 @@ casper.test.begin("Test Mbox Module", {
 		})
 	},
 
+	/**
+	 * 测试标记为星标
+	 * @return {void} 
+	 */
 	testMarkStar: function(){
 		//标为星标
 		casper.then(function(){
@@ -314,6 +318,10 @@ casper.test.begin("Test Mbox Module", {
 		})
 	},
 
+	/**
+	 * 测试移动到
+	 * @return {void} 
+	 */
 	testMoveTo: function(){
 		//移动到
 		casper.then(function(){
@@ -334,6 +342,10 @@ casper.test.begin("Test Mbox Module", {
 		})
 	},
 
+	/**
+	 * 测试移动到->新建文件夹
+	 * @return {void} 
+	 */
 	testMoveToNewFolder: function(){
 		//移动到 新建分类
 		casper.then(function(){
