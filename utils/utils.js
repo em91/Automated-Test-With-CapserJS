@@ -5,9 +5,16 @@
 var $Utils = {};
 
 //获取可见模块内部某元素Xpath完整路径
-$Utils.getModuleXpath = function( xpath ){
-	return '//div[starts-with(@id, "module")][not(@style) or @style!="display: none;"]' + xpath;
+$Utils.getModuleXpath = function( xpath, module ){
+	return '//div[starts-with(@id, "module' + (module ? ("_" + module) : "") + '")][not(@style) or @style!="display: none;"]' + xpath;
 }
+
+//获取精确的某个文件夹的列表容器xpath
+$Utils.getListContainerXpath = function( fid ){
+	var fidStr = '"' + fid + '"';
+	return '//div[starts-with(@id, "module_mbox")][not(@style) or @style!="display: none;"][contains(@name,' + fidStr + ')]';
+}
+
 //获取工具栏容器Xpath
 $Utils.getToolbarXpath = function( xpath ){
 	xpath = xpath || "";
@@ -306,7 +313,6 @@ $Utils.deleteMailBySubject = function( subject ){
 $Utils.createFolders = function(){
 	casper.test.comment( "createFolders" );
 	for( var type in $Folder ){
-		casper.echo( type );
 
 		//系统文件夹不能创建
 		if( $Folder[ type ].system ){
@@ -339,12 +345,10 @@ $Utils.createFolders = function(){
 			name: $Folder[ type ].name
 		})
 
-		casper.echo( id );
-		casper.echo( $Folder[type].name + " !!!--" + id)
 		$Folder[ type ].id = id;
-		casper.echo( $Folder[type].id );
+
+		casper.test.info( "Create Folder '" + $Folder[ type ].name + "' done, fid : " + id );
 	}
-	// casper.echo ( JSON.stringify( $Folder ) );
 }
 
 /**
@@ -409,25 +413,32 @@ $Utils.emptyFolders = function(){
 	}
 }
 
-$Utils.emptyInbox = function(){
-	casper.test.comment( "emptyInbox" );
+/**
+ * 清空收件箱、已发送、已删除等系统文件夹
+ * @return {void} 
+ */
+$Utils.emptySystemFolders = function(){
+	casper.test.comment( "emptySystemFolders" );
 	casper.evaluate(function(){
-		$.ajax({
-			url: "/jy5/xhr/mbox/empty.do?sid=" + $CONF.sid,
-			data: {
-				fid: $FID.inbox,
-				permanently: true
-			},
-			type: "POST",
-			success: function( result ){
-				// __utils__.echo( JSON.stringify( result ) );
-				if( result.code === "S_OK" ){
-				}
-			},
-			error: function(){
+		var systemFolders = [ $FID.inbox, $FID.sent, $FID.deleted, $FID.junk, $FID.subscription, $FID.ads, $FID.draft ];
+		for( var i = 0, l = systemFolders.length; i < l; i++ ){
+			$.ajax({
+				url: "/jy5/xhr/mbox/empty.do?sid=" + $CONF.sid,
+				data: {
+					fid: systemFolders[i],
+					permanently: true
+				},
+				type: "POST",
+				success: function( result ){
+					// __utils__.echo( JSON.stringify( result ) );
+					if( result.code === "S_OK" ){
+					}
+				},
+				error: function(){
 
-			},
-			async: false
-		})
+				},
+				async: false
+			})
+		}
 	})
 }
