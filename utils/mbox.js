@@ -80,9 +80,13 @@ $MBOX.withdrawTest = function( callback, withdraw ){
 		//点击撤销后校验UI
 		var withdrawLink = x( $Utils.getWithDrawXpath() );
 		if( casper.exists( withdrawLink ) ){
-			casper.click( x( $Utils.getWithDrawXpath() ) );
+			casper.click( withdrawLink );
 			casper.test.comment( "Click withdraw" );
 			casper.wait(1500, function(){
+				var msgbox = x( $Utils.getMsgBoxSuccXpath() );
+				var msg = this.exists( msgbox );
+				casper.test.assert( msg, 'MsgBox: ' + this.fetchText( msgbox ) );
+
 				$MBOX.checkListUI();
 				callback && callback();
 			})
@@ -92,25 +96,9 @@ $MBOX.withdrawTest = function( callback, withdraw ){
 	})
 }
 
-//点击标记为，下拉菜单截图
-$MBOX.assertDropMenu = function(){
-	var menuListXpath = $Utils.getToolbarXpath( '/div[contains(@class,"m-lst")][contains(@class, "open")]' );
-	casper.test.assert( casper.exists( x( menuListXpath ) ), 'Dropmenu Ok' );
-}
 
-//校验弹框是否显示中
-$MBOX.assertDialog = function(){
-	var dialogXpath = '//div[contains(@class,"js-w-dialogbox")][contains(@style,"display: block")]';
-	casper.test.assert( casper.exists( x( dialogXpath ) ), 'Dialog Ok' );
-}
 
 //获取第五封信的可点击checkbox
 $MBOX.getCheckBox = function(){
 	return x( $Utils.getModuleXpath('/div//table[1]//td[1]/div/div') );
-}
-
-//校验某个文件夹是否在侧边栏存在
-$MBOX.assertFolder = function( name ){
-	var folderXpath = $Utils.getMboxNavXpath() + "//span[contains(@class, 'js-name')][contains(., " + name + ")]";
-	casper.test.assert( casper.exists( x( folderXpath ) ), "Folder " + name + " exists." );
 }

@@ -1,7 +1,7 @@
 // var casper = require( "casper" ).create();
 
 var casper = require('casper').create({
-    verbose: true,
+    // verbose: true,
     logLevel: "debug"
 });
 
@@ -26,8 +26,8 @@ $CONFIG.screenshot = "screenshot";
  * @type {Object}
  */
 var $USER = {};
-$USER.USERNAME = "autojy5";
-$USER.PASSWORD = "aotujy51234";
+$USER.USERNAME = "";
+$USER.PASSWORD = "";
 
 /**
  * url相关
@@ -43,3 +43,6 @@ $URL.LOGIN = 'http://mail.163.com';
  */
 var $REG = {};
 $REG.JY5_LOGIN_OK_URL = /^http:\/\/[tc]*webmail.mail.163.com\/jy5\/main\.jsp\?sid=/;
+
+
+var $GLOBAL = {};

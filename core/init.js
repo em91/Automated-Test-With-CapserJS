@@ -2,17 +2,24 @@ casper.userAgent('Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like G
 
 //404和500
 casper.on('http.status.404', function( resource ) {
-    casper.tester.error( '404: ' + resource.url );
+    casper.test.error( '404: ' + resource.url );
 });
 
 casper.on('http.status.500', function( resource ) {
-    casper.tester.error( '500: ' + resource.url );
+    casper.test.error( '500: ' + resource.url );
 });
 
 //页面出现JS错误
 casper.on( "page.error", function( msg, trace ) {
-	this.echo("Error: " + msg + "// " +  require( 'utils' ).dump( trace ), "ERROR");
+	casper.test.error( "JS Error" );
+	// this.echo("Error: " + msg + "// " +  require( 'utils' ).dump( trace ), "ERROR");
 });
+
+casper.options.onResourceRequested = function( casper, resource ){
+	// if( resource.url.indexOf( "list.do ") > -1 ){
+	// 	this.echo( "resource received: " + JSON.stringify( resource ) );
+	// }
+}
 
 
 var fs = require('fs');

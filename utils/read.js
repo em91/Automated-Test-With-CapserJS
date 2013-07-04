@@ -3,10 +3,10 @@ var $READ = {};
 
 
 $READ.getMailContent = function( mid ){
-	var result = casper.evaluate(function (){
+	var result = casper.evaluate(function ( mid ){
 		var data;
 		$.ajax({
-			url: "/jy5/xhr/read.do?sid=" + $CONF.sid,
+			url: "/jy5/xhr/msg/read.do?sid=" + $CONF.sid,
 			method: "POST",
 			data: {
 				mid: mid
@@ -17,10 +17,12 @@ $READ.getMailContent = function( mid ){
 			}
 		})
 		return data;
+	}, {
+		mid: mid
 	})
 
 	if( result.code === "S_OK" ){
-
+		return result;
 	} else {
 		casper.test.error( "Read.do Error: " + result.code );
 	}
